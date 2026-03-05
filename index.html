@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Classroom</title>
+    <link rel="icon" type="image/png" href="https://ssl.gstatic.com/classroom/favicon.png">
+    <style>
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .btn { padding: 15px 30px; background: #2e7d32; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.2rem; }
+        .btn:hover { background: #388e3c; }
+    </style>
+</head>
+<body>
+    <h1>Classroom Session</h1>
+    <button class="btn" id="launch">Join Game</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js"></script>
+    <script src="uv.config.js"></script>
+    
+    <script>
+        const btn = document.getElementById('launch');
+
+        btn.onclick = async () => {
+            // 1. Register the Proxy Service Worker
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register('./uv.sw.js', {
+                    scope: __uv$config.prefix
+                });
+            }
+
+            // 2. Open the About:Blank window
+            const win = window.open('about:blank', '_blank');
+            if (!win) {
+                alert("Pop-up blocked! Please allow pop-ups for this site.");
+                return;
+            }
+
+            // 3. Create the Proxy URL for your game.html
+            // This tells the proxy to load your local game file
+            const gameUrl = window.location.origin + '/game.html';
+            const proxiedUrl = __uv$config.prefix + __uv$config.encodeUrl(gameUrl);
+
+            // 4. Inject the Game into the blank window
+            const iframe = win.document.createElement('iframe');
+            iframe.style = "position:fixed;top:0;left:0;width:100%;height:100%;border:none;background:#000;";
+            iframe.src = proxiedUrl;
+            
+            win.document.body.style.margin = "0";
+            win.document.body.appendChild(iframe);
+            
+            btn.innerText = "Launched in New Tab!";
+        };
+    </script>
+</body>
+</html>
