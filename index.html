@@ -10,18 +10,45 @@
 </head>
 <body>
     <button class="btn" id="launch">Launch Game</button>
+    
     <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js"></script>
     <script src="uv.config.js"></script>
+    
     <script>
-        document.getElementById('launch').onclick = async () => {
+        const btn = document.getElementById('launch');
+
+        btn.onclick = async () => {
+            // 1. Register the Proxy
             if ('serviceWorker' in navigator) {
-                await navigator.serviceWorker.register('./uv.sw.js', { scope: __uv$config.prefix });
+                try {
+                    await navigator.serviceWorker.register('./uv.sw.js', { 
+                        scope: __uv$config.prefix 
+                    });
+                } catch (err) {
+                    console.error("Service Worker failed:", err);
+                }
             }
+
+            // 2. Open the Tab
             const win = window.open('about:blank', '_blank');
-            const proxiedUrl = __uv$config.prefix + __uv$config.encodeUrl(window.location.origin + '/game.html');
+            if (!win) {
+                alert("Pop-up blocked! Please allow pop-ups for this site.");
+                return;
+            }
+
+            // 3. Find the correct path to game.html
+            const path = window.location.pathname;
+            const directory = path.substring(0, path.lastIndexOf('/'));
+            const gameUrl = window.location.origin + directory + '/game.html';
+            
+            // 4. Encode and Inject
+            const proxiedUrl = __uv$config.prefix + __uv$config.encodeUrl(gameUrl);
+
             const iframe = win.document.createElement('iframe');
-            iframe.style = "position:fixed;top:0;left:0;width:100%;height:100%;border:none;";
+            iframe.style = "position:fixed;top:0;left:0;width:100%;height:100%;border:none;background:#000;";
             iframe.src = proxiedUrl;
+            
+            win.document.body.style.margin = "0";
             win.document.body.appendChild(iframe);
         };
     </script>
