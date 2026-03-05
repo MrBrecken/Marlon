@@ -5,44 +5,40 @@
     <link rel="icon" type="image/png" href="https://ssl.gstatic.com/classroom/favicon.png">
     <style>
         body { background: #111; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .btn { padding: 15px 30px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.2rem; }
+        .btn { padding: 15px 30px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .btn:hover { background: #45a049; transform: scale(1.05); }
     </style>
 </head>
 <body>
-    <button class="btn" id="launch">Marlon</button>
+    <button class="btn" id="launch">Launch Game</button>
     
     <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js"></script>
-    <script src="uv.config.js"></script>
+    <script src="/uv.config.js"></script>
     
     <script>
         const btn = document.getElementById('launch');
 
         btn.onclick = async () => {
-            // 1. Register the Proxy
             if ('serviceWorker' in navigator) {
                 try {
-                    await navigator.serviceWorker.register('./uv.sw.js', { 
-                        scope: __uv$config.prefix 
+                    // Registering from the root of computerco.info
+                    await navigator.serviceWorker.register('/uv.sw.js', { 
+                        scope: '/service/' 
                     });
                 } catch (err) {
-                    console.error("Service Worker failed:", err);
+                    console.error("Proxy Registration Failed:", err);
                 }
             }
 
-            // 2. Open the Tab
             const win = window.open('about:blank', '_blank');
             if (!win) {
-                alert("Pop-up blocked! Please allow pop-ups for this site.");
+                alert("Pop-up blocked! Please allow pop-ups.");
                 return;
             }
 
-            // 3. Find the correct path to game.html
-            const path = window.location.pathname;
-            const directory = path.substring(0, path.lastIndexOf('/'));
-            const gameUrl = window.location.origin + directory + '/game.html';
-            
-            // 4. Encode and Inject
-            const proxiedUrl = __uv$config.prefix + __uv$config.encodeUrl(gameUrl);
+            // Using your custom domain root path
+            const gameUrl = window.location.origin + '/game.html';
+            const proxiedUrl = '/service/' + __uv$config.encodeUrl(gameUrl);
 
             const iframe = win.document.createElement('iframe');
             iframe.style = "position:fixed;top:0;left:0;width:100%;height:100%;border:none;background:#000;";
