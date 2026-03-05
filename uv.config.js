@@ -5,6 +5,6 @@ self.__uv$config = {
     decodeUrl: Ultraviolet.codec.xor.decode,
     handler: 'https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.handler.js',
     bundle: 'https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js',
-    config: 'https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.config.js',
-    sw: 'https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.sw.js',
+    config: '/uv.config.js',
+    sw: '/uv.sw.js',
 };
