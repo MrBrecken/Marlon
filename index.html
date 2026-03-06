@@ -7,41 +7,50 @@
         body { 
             background: #111; 
             color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
             margin: 0; 
+            overflow: hidden;
         }
+        .container { text-align: center; }
+        h1 { font-size: 2rem; margin-bottom: 20px; color: #eee; }
         .btn { 
-            padding: 15px 40px; 
+            padding: 16px 45px; 
             background: #2e7d32; 
             color: white; 
             border: none; 
-            border-radius: 8px; 
+            border-radius: 12px; 
             cursor: pointer; 
-            font-size: 1.2rem; 
-            font-weight: bold;
-            transition: transform 0.2s, background 0.2s;
+            font-size: 1.25rem; 
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
         .btn:hover { 
             background: #388e3c; 
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { background: #555; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-    <h1>Mathematics Session</h1>
-    <button class="btn" id="launch">Join Activity</button>
+    <div class="container">
+        <h1>Mathematics Session</h1>
+        <button class="btn" id="launch">Join Activity</button>
+    </div>
     
     <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js"></script>
     <script src="/uv.config.js"></script>
     
     <script>
-        // Force HTTPS because Service Workers won't register on HTTP
+        // 1. Strict HTTPS Check (Service Workers require it)
         if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
             location.replace(`https:${location.href.substring(location.protocol.length)}`);
         }
@@ -49,49 +58,67 @@
         const btn = document.getElementById('launch');
 
         btn.onclick = async () => {
-            btn.innerText = "Launching...";
-            
+            btn.disabled = true;
+            btn.innerText = "Syncing...";
+
             if ('serviceWorker' in navigator) {
                 try {
-                    // Register the worker at the root of computerco.info
-                    await navigator.serviceWorker.register('/uv.sw.js', { 
+                    // 2. Register and wait for the "Ready" state
+                    // This prevents the bare-mux MessagePort error
+                    const registration = await navigator.serviceWorker.register('/uv.sw.js', { 
                         scope: '/service/' 
                     });
+                    
+                    await navigator.serviceWorker.ready;
+                    console.log("Service Worker is live.");
                 } catch (err) {
-                    alert("Proxy Error: " + err.message + ". Make sure Enforce HTTPS is ON in GitHub settings.");
+                    alert("Connection Error: " + err.message);
+                    btn.disabled = false;
                     btn.innerText = "Join Activity";
                     return;
                 }
             }
 
-            // Open the cloaked window
+            // 3. Open the cloaked window
             const win = window.open('about:blank', '_blank');
             if (!win) {
-                alert("Pop-up blocked! Please allow pop-ups for this site.");
+                alert("Pop-up blocked! Please allow pop-ups for computerco.info");
+                btn.disabled = false;
                 btn.innerText = "Join Activity";
                 return;
             }
 
-            // The target URL to unblock
+            // 4. Set the Target URL (Eaglercraft 1.12.2)
             const targetUrl = 'https://eaglercraft.com/play/?version=1.12.2';
-            
-            // Encode the URL using the Ultraviolet codec
             const proxiedUrl = '/service/' + __uv$config.encodeUrl(targetUrl);
 
-            // Create and inject the fullscreen iframe
-            const iframe = win.document.createElement('iframe');
+            // 5. Build the content inside the about:blank tab
+            const doc = win.document;
+            doc.title = "Google Classroom"; // Spoof title
+            
+            // Add favicon spoof
+            const link = doc.createElement('link');
+            link.rel = 'icon';
+            link.href = 'https://ssl.gstatic.com/classroom/favicon.png';
+            doc.head.appendChild(link);
+
+            doc.body.style.margin = "0";
+            doc.body.style.padding = "0";
+            doc.body.style.background = "#000";
+            doc.body.style.overflow = "hidden";
+
+            const iframe = doc.createElement('iframe');
             iframe.style.position = "fixed";
             iframe.style.top = "0";
             iframe.style.left = "0";
             iframe.style.width = "100%";
             iframe.style.height = "100%";
             iframe.style.border = "none";
-            iframe.style.background = "#000";
             iframe.src = proxiedUrl;
             
-            win.document.body.style.margin = "0";
-            win.document.body.appendChild(iframe);
+            doc.body.appendChild(iframe);
             
+            btn.disabled = false;
             btn.innerText = "Join Activity";
         };
     </script>
