@@ -1,14 +1,14 @@
-/* --- STEP 1: IMPORT THE ENGINE --- */
+/* Ultraviolet Service Worker - Direct Version */
 importScripts('https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js');
-
-/* --- STEP 2: IMPORT THE CONFIG --- */
 importScripts('/uv.config.js');
 
-/* --- STEP 3: INITIALIZE --- */
-if (self.Ultraviolet) {
-    const sw = new self.UVServiceWorker();
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
-    self.addEventListener('fetch', (event) => {
+// We use a slight delay to ensure uv.bundle.js is parsed
+self.addEventListener('fetch', (event) => {
+    if (event.request.url.includes('/service/')) {
+        const sw = new self.UVServiceWorker();
         event.respondWith(sw.fetch(event));
-    });
-}
+    }
+});
