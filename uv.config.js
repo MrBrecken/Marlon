@@ -1,12 +1,3 @@
-/* Smart Config: Only imports scripts if inside a Service Worker */
-if (typeof importScripts === 'function') {
-    try {
-        importScripts('https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@1.1.0/dist/index.js');
-    } catch (e) {
-        console.error('Bare-mux failed to load via importScripts', e);
-    }
-}
-
 self.__uv$config = {
     prefix: '/service/',
     bare: 'https://uv.radon.games/bare/', 
