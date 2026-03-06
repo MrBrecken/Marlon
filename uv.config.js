@@ -1,17 +1,15 @@
-/* Essential: Import Bare-Mux for communication between the page and the worker */
-importScripts('https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@1.1.0/dist/index.js');
+/* Smart Config: Only imports scripts if inside a Service Worker */
+if (typeof importScripts === 'function') {
+    try {
+        importScripts('https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@1.1.0/dist/index.js');
+    } catch (e) {
+        console.error('Bare-mux failed to load via importScripts', e);
+    }
+}
 
 self.__uv$config = {
     prefix: '/service/',
-    
-    /* BARE SERVER: If the screen is black, change this URL to one of the alternates below.
-    */
     bare: 'https://uv.radon.games/bare/', 
-    
-    // Alternates to try if radon.games is slow:
-    // bare: 'https://bare.fly.dev/',
-    // bare: 'https://bare.astral.sh/',
-
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
     handler: 'https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.handler.js',
