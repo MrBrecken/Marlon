@@ -1,61 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Google Classroom</title>
     <link rel="icon" type="image/png" href="https://ssl.gstatic.com/classroom/favicon.png">
     <style>
         body { 
-            background: #111; 
-            color: white; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            margin: 0; 
-            overflow: hidden;
+            background: #111; color: white; font-family: sans-serif; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; height: 100vh; margin: 0; 
         }
-        .container { text-align: center; }
-        h1 { font-size: 2rem; margin-bottom: 20px; color: #eee; }
         .btn { 
-            padding: 16px 45px; 
-            background: #2e7d32; 
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 1.25rem; 
-            font-weight: 600;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            padding: 15px 40px; background: #2e7d32; color: white; 
+            border: none; border-radius: 8px; cursor: pointer; 
+            font-size: 1.2rem; font-weight: bold; transition: 0.2s;
         }
-        .btn:hover { 
-            background: #388e3c; 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-        }
-        .btn:active { transform: translateY(0); }
-        .btn:disabled { background: #555; cursor: not-allowed; }
+        .btn:hover { background: #388e3c; transform: scale(1.05); }
+        .btn:disabled { background: #555; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Mathematics Session</h1>
-        <button class="btn" id="launch">Join Activity</button>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js"></script>
-    <script src="/uv.config.js"></script>
-    
-    <script>
-        // 1. Strict HTTPS Check (Service Workers require it)
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-            location.replace(`https:${location.href.substring(location.protocol.length)}`);
-        }
+    <h1>Mathematics Session</h1>
+    <button class="btn" id="launch">Join Activity</button>
 
+    <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/scramjet@latest/dist/bundle.js"></script>
+    <script src="/scramjet.config.js"></script>
+
+    <script>
         const btn = document.getElementById('launch');
+
+        // Simple XOR codec to match Scramjet config
+        const xor = {
+            encode(str) {
+                if (!str) return str;
+                return encodeURIComponent(str.split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join(''));
+            },
+            decode(str) {
+                if (!str) return str;
+                let [reversed, ...search] = str.split('?');
+                return decodeURIComponent(reversed).split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char).join('') + (search.length ? '?' + search.join('?') : '');
+            }
+        };
 
         btn.onclick = async () => {
             btn.disabled = true;
@@ -63,61 +49,38 @@
 
             if ('serviceWorker' in navigator) {
                 try {
-                    // 2. Register and wait for the "Ready" state
-                    // This prevents the bare-mux MessagePort error
-                    const registration = await navigator.serviceWorker.register('/uv.sw.js', { 
-                        scope: '/service/' 
+                    await navigator.serviceWorker.register('/sw.js', {
+                        scope: '/service/'
                     });
-                    
                     await navigator.serviceWorker.ready;
-                    console.log("Service Worker is live.");
                 } catch (err) {
-                    alert("Connection Error: " + err.message);
+                    alert("Worker Error: " + err.message);
                     btn.disabled = false;
-                    btn.innerText = "Join Activity";
                     return;
                 }
             }
 
-            // 3. Open the cloaked window
             const win = window.open('about:blank', '_blank');
             if (!win) {
-                alert("Pop-up blocked! Please allow pop-ups for computerco.info");
+                alert("Pop-up blocked!");
                 btn.disabled = false;
-                btn.innerText = "Join Activity";
                 return;
             }
 
-            // 4. Set the Target URL (Eaglercraft 1.12.2)
+            // Target Game URL
             const targetUrl = 'https://eaglercraft.com/play/?version=1.12.2';
-            const proxiedUrl = '/service/' + __uv$config.encodeUrl(targetUrl);
+            const proxiedUrl = '/service/' + xor.encode(targetUrl);
 
-            // 5. Build the content inside the about:blank tab
             const doc = win.document;
-            doc.title = "Google Classroom"; // Spoof title
-            
-            // Add favicon spoof
-            const link = doc.createElement('link');
-            link.rel = 'icon';
-            link.href = 'https://ssl.gstatic.com/classroom/favicon.png';
-            doc.head.appendChild(link);
-
+            doc.title = "Google Classroom";
             doc.body.style.margin = "0";
-            doc.body.style.padding = "0";
             doc.body.style.background = "#000";
-            doc.body.style.overflow = "hidden";
 
             const iframe = doc.createElement('iframe');
-            iframe.style.position = "fixed";
-            iframe.style.top = "0";
-            iframe.style.left = "0";
-            iframe.style.width = "100%";
-            iframe.style.height = "100%";
-            iframe.style.border = "none";
+            iframe.style = "position:fixed;top:0;left:0;width:100%;height:100%;border:none;";
             iframe.src = proxiedUrl;
             
             doc.body.appendChild(iframe);
-            
             btn.disabled = false;
             btn.innerText = "Join Activity";
         };
