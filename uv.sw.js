@@ -1,14 +1,15 @@
 /* Ultraviolet Service Worker Engine */
-// 1. IMPORT THE BASE ENGINE FIRST
+
+// 1. IMPORT THE ENGINE AND YOUR CONFIG
 importScripts('https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.bundle.js');
+importScripts('/uv.config.js'); // <--- This fixes the "___uv$config is not defined" error
 
 (() => {
-    // 2. DEFINE THE ENGINE
     var d = self.Ultraviolet,
         v = ["cross-origin-embedder-policy", "cross-origin-opener-policy", "cross-origin-resource-policy", "content-security-policy", "content-security-policy-report-only", "expect-ct", "feature-policy", "origin-isolation", "strict-transport-security", "upgrade-insecure-requests", "x-content-type-options", "x-download-options", "x-frame-options", "x-permitted-cross-domain-policies", "x-powered-by", "x-xss-protection"],
         x = ["GET", "HEAD"],
         p = class extends d.EventEmitter {
-            constructor(e = __uv$config) {
+            constructor(e = self.__uv$config) {
                 super(), e.prefix || (e.prefix = "/service/"), this.config = e, this.bareClient = new d.BareClient
             }
             route({
