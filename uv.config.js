@@ -1,8 +1,16 @@
-/* Updated Config - Removed external dependencies to bypass network blocks */
+/* Updated Config - Switching to an active Bare Server */
 self.__uv$config = {
     prefix: '/service/',
-    // Using a very stable Bare server
-    bare: 'https://uv.radon.games/bare/', 
+    
+    // This server is currently a more stable alternative
+    bare: 'https://bare.asteris.xyz/', 
+    
+    /* If it goes black again, try replacing the 'bare' line with:
+       bare: 'https://bare.fly.dev/',
+       OR
+       bare: 'https://api.tunmetet.net/bare/',
+    */
+
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
     handler: 'https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.3/dist/uv.handler.js',
